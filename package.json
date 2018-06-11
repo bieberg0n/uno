@@ -3,9 +3,12 @@
   "version": "0.0.1",
   "description": "",
   "main": "uno.js",
-  "dependencies": {},
+  "dependencies": {
+    "node-uuid": "^1.4.8"
+  },
   "devDependencies": {
-    "@types/node": "^10.3.2"
+    "@types/node": "^10.3.2",
+    "@types/node-uuid": "0.0.28"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

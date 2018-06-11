@@ -4,7 +4,7 @@ OUTPUT = build
 FLAGS = 
 
 main: ${SRC}
-	tsc ${SRC} --outDir ${OUTPUT}
+	tsc ${CFLAGS} ${SRC} --outDir ${OUTPUT}
 
 run: ${OUTPUT}
 	node ${FLAGS} ${OUTPUT}/main.js
