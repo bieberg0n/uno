@@ -17,6 +17,7 @@ def main():
     data_str = s.recv(512).decode()
     data = json.loads(data_str)
 
+    print(s.recv(512))
     # data2_str = s2.recv(512).decode()
     # data2 = json.loads(data2_str)
 

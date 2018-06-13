@@ -22,6 +22,14 @@ class Player {
         this.status = status
         this.cards = deckList
     }
+
+    cardInCards(card: string): boolean {
+        return this.cards.indexOf(card) !== -1
+    }
+
+    cardsInCards(cards: string[]): boolean {
+        return this.cards.every(card => this.cardInCards(card))
+    }
 }
 
 class Message {
@@ -67,27 +75,36 @@ class UnoServer {
         return this.players[-1]
     }
 
-    lobby(msg: Message, conn: net.Socket) {
+    join(conn: net.Socket, msg: Message){
+        log(`${conn.remoteAddress}:${conn.remotePort} join`)
+        const player = new Player(conn, uuid.v4(), 'join', [])
+        this.players.push(player)
+        const m = new Message('', player.id, '', [])
+        conn.write(JSON.stringify(m))
+        this.broadcast(player.id.slice(0, 6) + ' join.' )
+    }
+
+    ready(conn: net.Socket, msg: Message) {
+        log(`${conn.remoteAddress}:${conn.remotePort} ready`)
+        const player = this.playerFromArr(msg.id)
+        player.status = msg.action
+        for (let p of this.players) {
+            if (p.status != 'ready') {
+                return
+            }
+        }
+        this.status = 'playing'
+        log('playing')
+        this.dealCards()
+        this.pushCards()
+    }
+
+    lobby(conn: net.Socket, msg: Message) {
         if ((msg.action === 'join') && !this.idInPlayers(msg.id)) {
-            log(`${conn.remoteAddress}:${conn.remotePort} join`)
-            const player = new Player(conn, uuid.v4(), 'join', [])
-            this.players.push(player)
-            const m = new Message('', player.id, '', [])
-            conn.write(JSON.stringify(m))
+            this.join(conn, msg)
 
        } else if ((msg.action === 'ready') && this.idInPlayers(msg.id)) {
-            log(`${conn.remoteAddress}:${conn.remotePort} ready`)
-            const player = this.playerFromArr(msg.id)
-            player.status = msg.action
-            for (let p of this.players) {
-                if (p.status != 'ready') {
-                    return
-                }
-            }
-            this.status = 'playing'
-            log('playing')
-            this.dealCards()
-            this.pushCards()
+            this.ready(conn, msg)
         }
     }
 
@@ -106,7 +123,13 @@ class UnoServer {
 
     playing(msg: Message) {
         if (this.idInPlayers(msg.id)) {
+            if ((msg.action === 'push') &&
+                (msg.cards.length === 1) &&
+                (this.playerFromArr(msg.id).cardsInCards(msg.cards))
+            ) {
 
+
+            }
         } else {
             return
         }
