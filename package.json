@@ -4,11 +4,13 @@
   "description": "",
   "main": "uno.js",
   "dependencies": {
-    "node-uuid": "^1.4.8"
+    "node-uuid": "^1.4.8",
+    "shuffle-array": "^1.0.1"
   },
   "devDependencies": {
     "@types/node": "^10.3.2",
-    "@types/node-uuid": "0.0.28"
+    "@types/node-uuid": "0.0.28",
+    "@types/shuffle-array": "0.0.28"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
