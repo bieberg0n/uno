@@ -1,7 +1,7 @@
 SRC = src/*.ts
 CFLAGS = --strict -t "ESNext" -m "CommonJS"
 OUTPUT = build
-FLAGS = 
+FLAGS =
 
 main: ${SRC}
 	tsc ${CFLAGS} ${SRC} --outDir ${OUTPUT}

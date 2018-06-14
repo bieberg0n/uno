@@ -77,7 +77,7 @@ class UnoServer {
         } else {
             player.status = msg.action
             for (let [_, p] of this.players) {
-                if (p.status != 'ready') {
+                if (p.status !== 'ready') {
                     return
                 }
             }
@@ -129,24 +129,39 @@ class UnoServer {
         return true
     }
 
-    playing(msg: Message) {
+    syncCards(player: Player) {
+        const msg = new Message('', player.id, '', Array.from(player.cards))
+        player.conn.write(JSON.stringify(msg))
+    }
+
+    playing(conn: net.Socket, msg: Message) {
         const player = this.players.get(msg.id)
         if (player === undefined) {
             return
-        } else if (this.playingcheck(player, msg)) {
-            if (msg.action === 'push') {
-                player.cards.delete(msg.cards[0])
-                this.broadcast(`${player.id.slice(0, 6)} push ${msg.cards[0]}`)
-            } else {
-                log('inv msg')
-            }
+
+        } else if (!this.playingcheck(player, msg)) {
+            return
+        }
+
+        player.conn = conn
+        if (msg.action === 'push') {
+            player.cards.delete(msg.cards[0])
+            this.syncCards(player)
+            this.broadcast(`${player.id.slice(0, 6)} push ${msg.cards[0]}`)
+
+        } else {
+            log('inv msg')
         }
     }
 
     broadcast(msgStr: string) {
         const message = new Message('', 'b', msgStr, [])
         for (let [_, p] of this.players) {
-            p.conn.write(JSON.stringify(message))
+            try {
+                p.conn.write(JSON.stringify(message))
+            } catch(e) {
+                log(e)
+            }
         }
     }
 
@@ -155,8 +170,9 @@ class UnoServer {
         log(`${conn.remoteAddress}:${conn.remotePort} action: ${msg.action}`)
         if (this.status === 'lobby') {
             this.lobby(conn, msg)
+
         } else if (this.status === 'playing') {
-            this.playing(msg)
+            this.playing(conn, msg)
         }
     }
 }
@@ -166,6 +182,9 @@ const unoServer = new UnoServer()
 const handle = function (conn: net.Socket) {
     conn.on('data', function (data: string) {
         unoServer.handle(conn, data)
+    })
+    conn.on('CLOSED', function (data: string) {
+        // unoServer.handle(conn, data)
     })
 }
 

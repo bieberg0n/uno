@@ -6,50 +6,65 @@ def log(*args):
     print(*args)
 
 
+class Client:
+    def __init__(self, serv_addr: tuple):
+        self.conn = socket.socket()
+        self.conn.connect(serv_addr)
+        self.id = ''
+        self.cards = list()
+
+    def action(self, ac: str, cards: list = []):
+        msg = dict(
+            action=ac,
+            id=self.id,
+            cards=cards
+        )
+        self.conn.sendall(json.dumps(msg).encode())
+
+    def recv(self):
+        data_str = self.conn.recv(512).decode()
+        data = json.loads(data_str)
+        log(data)
+        return data
+
+    def join(self):
+        self.action('join')
+        data = self.recv()
+        self.id = data['id']
+        log(self.id)
+
+    def ready(self):
+        self.action('ready')
+        data = self.recv()
+        self.cards = data['cards']
+
+    def push(self, card):
+        self.action('push', [card])
+        data = self.recv()
+        self.cards = data['cards']
+
+
 def main():
-    s = socket.socket()
-    s.connect(('127.0.0.1', 9900))
-    # s2 = socket.socket()
-    # s2.connect(('127.0.0.1', 9900))
+    serv_addr = ('127.0.0.1', 9900)
+    cli = Client(serv_addr)
+    cli.join()
+    cli.recv()
+    cli.ready()
+    cli.push(cli.cards[0])
 
-    msg = dict(
-        action='join',
-        )
-    s.sendall(json.dumps(msg).encode())
-    # s2.sendall(json.dumps(msg).encode())
-
-    data_str = s.recv(512).decode()
-    data = json.loads(data_str)
-
-    print(data)
-    print(s.recv(512))
-    # data2_str = s2.recv(512).decode()
-    # data2 = json.loads(data2_str)
-
-    msg = dict(
-        action='ready',
-        id=data['id']
-        )
-    s.sendall(json.dumps(msg).encode())
-    # print(s.recv(512))
+    # resp = json.loads(s.recv(512).decode())
+    # log(resp)
+    # cards = resp['cards']
 
     # msg = dict(
-    #     action='ready',
-    #     id=data2['id']
-    #     )
-    # s2.sendall(json.dumps(msg).encode())
-    resp = json.loads(s.recv(512).decode())
-    log(resp)
-    cards = resp['cards']
-
-    msg = dict(
-        action='push',
-        id=data['id'],
-        cards=[cards[0]]
-        # cards=['y9']
-    )
-    s.sendall(json.dumps(msg).encode())
-    print(json.loads(s.recv(512).decode()))
+    #     action='push',
+    #     id=data['id'],
+    #     cards=[cards[0]]
+    #     # cards=['y9']
+    # )
+    # s.sendall(json.dumps(msg).encode())
+    # print(json.loads(s.recv(512).decode()))
+    # print(json.loads(s.recv(512).decode()))
 
 
 main()
