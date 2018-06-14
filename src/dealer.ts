@@ -1,4 +1,4 @@
-import shuffle = require("shuffle-array");
+import * as shuffle from "shuffle-array"
 
 export default class Decker {
     deckList: string[]
@@ -8,7 +8,7 @@ export default class Decker {
     }
 
     shuffle() {
-        const color = ['r', 'g', 'b', 'y']
+        const color = ['红', '绿', '蓝', '黄']
         for (let c of color) {
             for (let i=1; i <= 9; i++) {
                 this.deckList.push(c + String(i))

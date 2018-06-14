@@ -1,5 +1,5 @@
 SRC = src/*.ts
-CFLAGS = --strict
+CFLAGS = --strict -t "ESNext" -m "CommonJS"
 OUTPUT = build
 FLAGS = 
 

@@ -1,12 +1,12 @@
-import net = require('net')
-import uuid = require('node-uuid')
+import * as net from 'net'
+import * as uuid from 'node-uuid'
 import Decker from './dealer'
 
 
 const HOST = '127.0.0.1'
 const PORT = 9900
 
-const log = function<T>(...args: T[]) {
+const log = function <T>(...args: T[]) {
     console.log(...args)
 }
 
@@ -14,21 +14,22 @@ class Player {
     conn: net.Socket
     id: string
     status: string
-    cards: string[]
+    cards: Set<string>
 
-    constructor(conn: net.Socket, id: string, status: string, deckList: string[]) {
+    constructor(conn: net.Socket, id: string, status: string, cards: Set<string>) {
         this.conn = conn
         this.id = id
         this.status = status
-        this.cards = deckList
+        this.cards = cards
     }
 
-    cardInCards(card: string): boolean {
-        return this.cards.indexOf(card) !== -1
-    }
+    // cardInCards(card: string): boolean {
+    //     // const a = new Map(
+    //     return this.cards.has(card)
+    // }
 
     cardsInCards(cards: string[]): boolean {
-        return this.cards.every(card => this.cardInCards(card))
+        return cards.every(card => this.cards.has(card))
     }
 }
 
@@ -48,96 +49,103 @@ class Message {
 
 class UnoServer {
     status: string
-    players: Player[]
+    players: Map<string, Player>
     decker: Decker
 
     constructor() {
         this.status = 'lobby'
-        this.players = []
+        this.players = new Map()
         this.decker = new Decker()
     }
 
-    idInPlayers(id: string): boolean {
-        for (let player of this.players) {
-            if (id === player.id) {
-                return true
-            }
-        }
-        return false
-    }
-
-    playerFromArr(id: string): Player {
-        for (let player of this.players) {
-            if (id === player.id) {
-                return player
-            }
-        }
-        return this.players[-1]
-    }
-
-    join(conn: net.Socket, msg: Message){
+    join(conn: net.Socket) {
         log(`${conn.remoteAddress}:${conn.remotePort} join`)
-        const player = new Player(conn, uuid.v4(), 'join', [])
-        this.players.push(player)
+        const newId = uuid.v4()
+        const player = new Player(conn, newId, 'join', new Set([]))
+        this.players.set(newId, player)
         const m = new Message('', player.id, '', [])
         conn.write(JSON.stringify(m))
-        this.broadcast(player.id.slice(0, 6) + ' join.' )
+        this.broadcast(player.id.slice(0, 6) + ' join.')
     }
 
     ready(conn: net.Socket, msg: Message) {
-        log(`${conn.remoteAddress}:${conn.remotePort} ready`)
-        const player = this.playerFromArr(msg.id)
-        player.status = msg.action
-        for (let p of this.players) {
-            if (p.status != 'ready') {
-                return
+        const player = this.players.get(msg.id)
+        log(`${conn.remoteAddress}:${conn.remotePort} ${msg.id} ready`)
+        if (player === undefined) {
+            log('err player')
+            return
+        } else {
+            player.status = msg.action
+            for (let [_, p] of this.players) {
+                if (p.status != 'ready') {
+                    return
+                }
             }
+            this.status = 'playing'
+            log('playing')
+            this.dealCards()
+            this.pushCards()
         }
-        this.status = 'playing'
-        log('playing')
-        this.dealCards()
-        this.pushCards()
     }
 
     lobby(conn: net.Socket, msg: Message) {
-        if ((msg.action === 'join') && !this.idInPlayers(msg.id)) {
-            this.join(conn, msg)
+        if ((msg.action === 'join') && !this.players.has(msg.id)) {
+            this.join(conn)
 
-       } else if ((msg.action === 'ready') && this.idInPlayers(msg.id)) {
+        } else if ((msg.action === 'ready') && this.players.has(msg.id)) {
             this.ready(conn, msg)
         }
     }
 
     dealCards() {
-        for (let p of this.players) {
-            p.cards = this.decker.pops(5)
+        for (let [_, p] of this.players) {
+            p.cards = new Set(this.decker.pops(5))
         }
     }
 
     pushCards() {
-        for (let p of this.players) {
-            const msg = new Message('', p.id, '', p.cards)
+        for (let [_, p] of this.players) {
+            const msg = new Message('', p.id, '', Array.from(p.cards))
             p.conn.write(JSON.stringify(msg))
         }
     }
 
-    playing(msg: Message) {
-        if (this.idInPlayers(msg.id)) {
-            if ((msg.action === 'push') &&
-                (msg.cards.length === 1) &&
-                (this.playerFromArr(msg.id).cardsInCards(msg.cards))
+    playingcheck(player: Player, msg: Message): boolean {
+        // if (!this.players.has(msg.id)) {
+        //     log('players not have id')
+        //     return false
+
+        // } else
+        if (msg.action === 'push') {
+            // const player = this.players.get(msg.id)
+            if (msg.cards.length !== 1 ||
+                !player.cards.has(msg.cards[0])
             ) {
-
-
+                log('no player or len to long or not have card')
+                return false
             }
-        } else {
+        }
+
+        return true
+    }
+
+    playing(msg: Message) {
+        const player = this.players.get(msg.id)
+        if (player === undefined) {
             return
+        } else if (this.playingcheck(player, msg)) {
+            if (msg.action === 'push') {
+                player.cards.delete(msg.cards[0])
+                this.broadcast(`${player.id.slice(0, 6)} push ${msg.cards[0]}`)
+            } else {
+                log('inv msg')
+            }
         }
     }
 
     broadcast(msgStr: string) {
         const message = new Message('', 'b', msgStr, [])
-        for (let p of this.players) {
+        for (let [_, p] of this.players) {
             p.conn.write(JSON.stringify(message))
         }
     }
@@ -146,7 +154,7 @@ class UnoServer {
         const msg: Message = JSON.parse(data)
         log(`${conn.remoteAddress}:${conn.remotePort} action: ${msg.action}`)
         if (this.status === 'lobby') {
-            this.lobby(msg, conn)
+            this.lobby(conn, msg)
         } else if (this.status === 'playing') {
             this.playing(msg)
         }
@@ -155,17 +163,18 @@ class UnoServer {
 
 const unoServer = new UnoServer()
 
-const handle = function(conn: net.Socket) {
-    conn.on('data', function(data: string) {
+const handle = function (conn: net.Socket) {
+    conn.on('data', function (data: string) {
         unoServer.handle(conn, data)
     })
 }
 
-const main = function() {
+const main = function () {
     const serv = net.createServer(handle)
     serv.listen(PORT, HOST)
-    log('Server listening on ' + HOST +':'+ PORT);
+    log('Server listening on ' + HOST + ':' + PORT)
 }
 
 main()
 // log('test')
+// const a = new Set()

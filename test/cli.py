@@ -2,6 +2,10 @@ import socket
 import json
 
 
+def log(*args):
+    print(*args)
+
+
 def main():
     s = socket.socket()
     s.connect(('127.0.0.1', 9900))
@@ -17,6 +21,7 @@ def main():
     data_str = s.recv(512).decode()
     data = json.loads(data_str)
 
+    print(data)
     print(s.recv(512))
     # data2_str = s2.recv(512).decode()
     # data2 = json.loads(data2_str)
@@ -33,8 +38,18 @@ def main():
     #     id=data2['id']
     #     )
     # s2.sendall(json.dumps(msg).encode())
-    print(s.recv(512))
-    # print(s2.recv(512)
+    resp = json.loads(s.recv(512).decode())
+    log(resp)
+    cards = resp['cards']
+
+    msg = dict(
+        action='push',
+        id=data['id'],
+        cards=[cards[0]]
+        # cards=['y9']
+    )
+    s.sendall(json.dumps(msg).encode())
+    print(json.loads(s.recv(512).decode()))
 
 
 main()
