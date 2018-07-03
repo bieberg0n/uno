@@ -23,11 +23,6 @@ class Player {
         this.cards = cards
     }
 
-    // cardInCards(card: string): boolean {
-    //     // const a = new Map(
-    //     return this.cards.has(card)
-    // }
-
     cardsInCards(cards: string[]): boolean {
         return cards.every(card => this.cards.has(card))
     }
@@ -111,13 +106,7 @@ class UnoServer {
     }
 
     playingcheck(player: Player, msg: Message): boolean {
-        // if (!this.players.has(msg.id)) {
-        //     log('players not have id')
-        //     return false
-
-        // } else
         if (msg.action === 'push') {
-            // const player = this.players.get(msg.id)
             if (msg.cards.length !== 1 ||
                 !player.cards.has(msg.cards[0])
             ) {
@@ -125,7 +114,6 @@ class UnoServer {
                 return false
             }
         }
-
         return true
     }
 
@@ -146,8 +134,13 @@ class UnoServer {
         player.conn = conn
         if (msg.action === 'push') {
             player.cards.delete(msg.cards[0])
-            this.syncCards(player)
             this.broadcast(`${player.id.slice(0, 6)} push ${msg.cards[0]}`)
+            if (player.cards.size === 0) {
+                this.broadcast(`${player.id.slice(0, 6)} win !`)
+            }
+
+        } else if (msg.action === 'cards') {
+            this.syncCards(player)
 
         } else {
             log('inv msg')
@@ -177,9 +170,7 @@ class UnoServer {
     }
 }
 
-const unoServer = new UnoServer()
-
-const handle = function (conn: net.Socket) {
+const handle = function (conn: net.Socket, unoServer: UnoServer) {
     conn.on('data', function (data: string) {
         unoServer.handle(conn, data)
     })
@@ -189,7 +180,8 @@ const handle = function (conn: net.Socket) {
 }
 
 const main = function () {
-    const serv = net.createServer(handle)
+    const unoServer = new UnoServer()
+    const serv = net.createServer(conn => handle(conn, unoServer))
     serv.listen(PORT, HOST)
     log('Server listening on ' + HOST + ':' + PORT)
 }

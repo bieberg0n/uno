@@ -43,6 +43,10 @@ class Client:
         data = self.recv()
         self.cards = data['cards']
 
+    def sync(self):
+        self.action('cards')
+        self.cards = self.recv()['cards']
+
 
 def main():
     serv_addr = ('127.0.0.1', 9900)
@@ -50,21 +54,16 @@ def main():
     cli.join()
     cli.recv()
     cli.ready()
-    cli.push(cli.cards[0])
 
-    # resp = json.loads(s.recv(512).decode())
-    # log(resp)
-    # cards = resp['cards']
-
-    # msg = dict(
-    #     action='push',
-    #     id=data['id'],
-    #     cards=[cards[0]]
-    #     # cards=['y9']
-    # )
-    # s.sendall(json.dumps(msg).encode())
-    # print(json.loads(s.recv(512).decode()))
-    # print(json.loads(s.recv(512).decode()))
+    while True:
+        input_ = input(':').split(' ')
+        op = input_[0]
+        if op == 'push':
+            card = input_[1]
+            cli.push(card)
+        elif op == 'show':
+            cli.sync()
+            log(cli.cards)
 
 
 main()
