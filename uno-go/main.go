@@ -34,15 +34,23 @@ func (serv *UNOServer) handle(msg string, addr string) {
 		username := data
 		logs(username, "join")
 		serv.players[addr] = username
+		serv.broadcast(username + " 加入游戏")
 
 	} else if action == "s" {
-		m := serv.players[addr] + "say: " + data
+		m := serv.players[addr] + "说: " + data
 		logs(m)
 		serv.broadcast(m)
 
 	} else if action == "g" && serv.players[addr] == "bj" {
 		logs("go")
 
+	} else if action == "p" {
+		c := card()
+		serv.conn.WriteToUDP([]byte(c), makeUDPAddr(addr))
+		serv.broadcast(serv.players[addr] + "摸了1张牌")
+
+	} else if action == "q" {
+		serv.broadcast(serv.players[addr] + "出牌: " + data)
 	}
 }
 
