@@ -46,7 +46,7 @@ func (serv *UNOServer) handle(msg string, addr string) {
 
 	} else if action == "p" {
 		c := card()
-		serv.conn.WriteToUDP([]byte(c), makeUDPAddr(addr))
+		serv.conn.WriteToUDP([]byte("p"+c), makeUDPAddr(addr))
 		serv.broadcast(serv.players[addr] + "摸了1张牌")
 
 	} else if action == "q" {
