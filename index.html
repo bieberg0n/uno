@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="./static/main.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="show">
+    <label for="id-input-name">Name: </label><input id="id-input-name"/>
+    <button id="id-button-name">ok</button>
+</div>
+
+<div class="main hide">
+    <div class="players"></div>
+
+    <div class="cards"></div>
+    <button id="id-button-draw">摸牌</button>
+    <label>
+        转色：
+        <select id="id-select-choose-color">
+            <option value ="红">红</option>
+            <option value ="黄">黄</option>
+            <option value="蓝">蓝</option>
+            <option value="绿">绿</option>
+        </select>
+    </label>
+    <textarea class="message"></textarea>
+</div>
+
+</body>
+<script type="text/javascript" src="https://cdn.bootcss.com/socket.io/2.2.0/socket.io.js"></script>
+<script src="static/main.js"></script>
+</html>
