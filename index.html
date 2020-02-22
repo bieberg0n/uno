@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Title</title>
     <link href="./static/main.css" rel="stylesheet">
 </head>
@@ -15,16 +16,23 @@
 <div class="main hide">
     <div class="players"></div>
 
-    <div class="cards"></div>
-    <button id="id-button-draw">摸牌</button>
+    <div class="card-area">
+        <button class="card draw-button" id="id-button-draw">摸牌</button>
+        <div class="cards"></div>
+    </div>
+<!--    <button id="id-button-draw">摸牌</button>-->
     <label>
         转色：
-        <select id="id-select-choose-color">
-            <option value ="红">红</option>
-            <option value ="黄">黄</option>
-            <option value="蓝">蓝</option>
-            <option value="绿">绿</option>
-        </select>
+<!--        <select id="id-select-choose-color">-->
+<!--            <option value ="红">红</option>-->
+<!--            <option value ="黄">黄</option>-->
+<!--            <option value="蓝">蓝</option>-->
+<!--            <option value="绿">绿</option>-->
+<!--        </select>-->
+        <label class="red"><input class="color-checker" type="radio" name="color" value="红" checked>红</label>
+        <label class="yellow"><input class="color-checker" type="radio" name="color" value="黄">黄</label>
+        <label class="blue"><input class="color-checker" type="radio" name="color" value="蓝">蓝</label>
+        <label class="green"><input class="color-checker" type="radio" name="color" value="绿">绿</label>
     </label>
     <textarea class="message"></textarea>
 </div>

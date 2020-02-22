@@ -95,6 +95,7 @@ class Client {
         this.players = []
         this.playersNums = {}
         this.cards = []
+        this.checkColor = '红'
 
         this.socket.on('broadcast', (msg) => this.broadcastCallback(msg))
 
@@ -114,8 +115,15 @@ class Client {
 
         bindClick('#id-button-draw', () => this.socket.emit('draw', {'name': this.name}))
 
-        let s = q('#id-select-choose-color')
-        s.addEventListener('change', () => this.showCards(), false)
+        let colorCheckers = qs('.color-checker')
+        for (let c of colorCheckers) {
+            c.addEventListener('click', (e) => {
+                this.checkColor = e.target.value
+                this.showCards()
+            })
+        }
+        // colorCheckers.forEach(c => )
+        // s.addEventListener('change', () => this.showCards(), false)
     }
 
     playerHTML (player) {
@@ -145,10 +153,18 @@ class Client {
 
         let playersHtml = this.players.map(p => this.playerHTML(p)).join('')
         playersDiv.insertAdjacentHTML('afterBegin', playersHtml)
+
+        // 到我出牌提示
+        let cardArea = q('.card-area')
+        if (this.next === this.name) {
+            cardArea.classList.add('next-flag')
+        } else {
+            cardArea.classList.remove('next-flag')
+        }
     }
 
     showCards() {
-        let html = this.cards.map(card => `<div class="clickable card ${colorMap(card[0] === '黑' ? chooseColor() : card[0])}" data-card="${card}">${card.slice(1)}</div>`).join('')
+        let html = this.cards.map(card => `<div class="clickable card ${colorMap(card[0] === '黑' ? this.checkColor : card[0])}" data-card="${card}">${card.slice(1)}</div>`).join('')
 
         let div = q('.cards')
         div.innerHTML = ''
@@ -157,7 +173,7 @@ class Client {
         bindClick('.clickable', (event) => {
             let card = event.target.dataset.card
             if (card[0] === '黑') {
-                card += chooseColor()
+                card += this.checkColor
             }
             this.socket.emit('lead', {name: this.name, card: card})
         })

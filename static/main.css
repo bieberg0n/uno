@@ -10,21 +10,30 @@
     display: flex;
     flex-direction: column;
     width: 150px;
-    height: 250px;
+    /*height: 250px;*/
     padding-top: 10px;
     border: lightblue 1px solid;
     text-align: center;
     border-radius: 4px;
     align-items: center;
+    padding-bottom: 30px;
 }
 
 .player+.player {
     margin-left: 20px;
 }
 
+.name {
+    margin-bottom: 15px;
+}
+
 .next {
     /*background-color: #fffaa0;*/
     background-color: yellow;
+}
+
+.next-flag {
+    border: yellow 10px solid;
 }
 
 .card {
@@ -36,7 +45,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 30px;
+    /*margin-top: 30px;*/
+    /*margin-bottom: 30px;*/
 }
 
 .black {
@@ -59,9 +69,15 @@
     background-color: #d4070b;
 }
 
+.card-area {
+    display: flex;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
 .cards {
     display: flex;
-    /*flex-direction: column;*/
+    flex-wrap: wrap;
 }
 
 .card + .card {
@@ -72,4 +88,11 @@
     display: block;
     width: 575px;
     height: 150px;
+}
+
+.draw-button {
+    margin-right: 30px;
+    color: black;
+    background-color: white;
+    min-width: 100px;
 }
