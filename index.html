@@ -20,15 +20,9 @@
         <button class="card draw-button" id="id-button-draw">摸牌</button>
         <div class="cards"></div>
     </div>
-<!--    <button id="id-button-draw">摸牌</button>-->
+
     <label>
         转色：
-<!--        <select id="id-select-choose-color">-->
-<!--            <option value ="红">红</option>-->
-<!--            <option value ="黄">黄</option>-->
-<!--            <option value="蓝">蓝</option>-->
-<!--            <option value="绿">绿</option>-->
-<!--        </select>-->
         <label class="red"><input class="color-checker" type="radio" name="color" value="红" checked>红</label>
         <label class="yellow"><input class="color-checker" type="radio" name="color" value="黄">黄</label>
         <label class="blue"><input class="color-checker" type="radio" name="color" value="蓝">蓝</label>
@@ -37,6 +31,7 @@
     <textarea class="message"></textarea>
 </div>
 
+<audio src="static/alert.mp3"></audio>
 </body>
 <script type="text/javascript" src="https://cdn.bootcss.com/socket.io/2.2.0/socket.io.js"></script>
 <script src="static/main.js"></script>

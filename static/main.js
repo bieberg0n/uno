@@ -86,6 +86,22 @@ const chooseColor = function () {
     return s.value
 }
 
+class AlertAudio {
+    constructor() {
+        this.audio = q('audio')
+        this.audio.volume = 0.1
+    }
+
+    play () {
+        this.audio.currentTime = 0
+        this.audio.play()
+    }
+
+    stop() {
+        this.audio.pause()
+    }
+}
+
 class Client {
     constructor() {
         this.socket = io.connect({transports: ['websocket']})
@@ -96,6 +112,7 @@ class Client {
         this.playersNums = {}
         this.cards = []
         this.checkColor = '红'
+        this.alertAudio = new AlertAudio()
 
         this.socket.on('broadcast', (msg) => this.broadcastCallback(msg))
 
@@ -122,8 +139,6 @@ class Client {
                 this.showCards()
             })
         }
-        // colorCheckers.forEach(c => )
-        // s.addEventListener('change', () => this.showCards(), false)
     }
 
     playerHTML (player) {
@@ -137,7 +152,8 @@ class Client {
             num = num.toString()
         }
         let next = this.next === p ? 'next' : ''
-        let head = `<div class="player ${next}" data-name="${p}"><div class="name">${p}：${num}</div>`
+        let uno = num === 'UNO!' ? 'red' : ''
+        let head = `<div class="player ${next} ${uno}" data-name="${p}"><div class="name">${p}：${num}</div>`
         let cardHtml = ''
         let tail = '</div>'
         if (this.currentLeadPlayer === p) {
@@ -179,6 +195,15 @@ class Client {
         })
     }
 
+    checkUno () {
+        let hasUno = Object.values(this.playersNums).some(n => n === 1)
+        if (hasUno) {
+            this.alertAudio.play()
+        } else {
+            this.alertAudio.stop()
+        }
+    }
+
     broadcastCallback (msg) {
         let name = msg['name']
         let type = msg['type']
@@ -217,6 +242,7 @@ class Client {
             showMsg(name, msg['type'])
         }
         this.showPlayers()
+        this.checkUno()
     }
 }
 

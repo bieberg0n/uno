@@ -9,10 +9,11 @@ from utils import log
 def generate_cards():
     colors = ['红', '黄', '绿', '蓝']
     # 暂时没有反转牌   '跳过',
-    symbols = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '+2', '反转']
+    symbols = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+    spec_cards = ['+2', '反转']
     super_cards = ['黑转色', '黑+4']
     # generate a complete cards
-    cards = [n + m for n in colors for m in symbols] * 2 + super_cards * 4
+    cards = [n + m for n in colors for m in symbols] * 2 + [c + m for c in colors for m in spec_cards] * 4 + super_cards * 8
     return cards
 
 
