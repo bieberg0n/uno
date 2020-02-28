@@ -88,17 +88,17 @@ const chooseColor = function () {
 
 class AlertAudio {
     constructor() {
-        this.audio = q('audio')
-        this.audio.volume = 0.1
+        this.audio = q('.id-audio-alert')
+        this.audio.volume = 0.5
     }
 
     play () {
-        this.audio.currentTime = 0
         this.audio.play()
     }
 
     stop() {
         this.audio.pause()
+        this.audio.currentTime = 0
     }
 }
 
@@ -195,12 +195,17 @@ class Client {
         })
     }
 
-    checkUno () {
+    checkUnoOrWin () {
         let hasUno = Object.values(this.playersNums).some(n => n === 1)
         if (hasUno) {
             this.alertAudio.play()
         } else {
             this.alertAudio.stop()
+        }
+        let hasWin = Object.values(this.playersNums).some(n => n === 0)
+        if (hasWin) {
+            let winAudio = q('.id-audio-win')
+            winAudio.play()
         }
     }
 
@@ -242,7 +247,7 @@ class Client {
             showMsg(name, msg['type'])
         }
         this.showPlayers()
-        this.checkUno()
+        this.checkUnoOrWin()
     }
 }
 
