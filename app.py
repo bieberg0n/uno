@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from flask import Flask, send_file
+from flask import Flask, send_file, redirect
 from flask_socketio import SocketIO, emit
 from uno import Table
 from config import port
@@ -14,6 +14,12 @@ table = Table()
 @app.route('/')
 def index():
     return send_file('index.html')
+
+
+@app.route('/restart')
+def restart():
+    table.win()
+    return redirect('/', 302)
 
 
 @socketio.on('lead')

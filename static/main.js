@@ -86,21 +86,21 @@ const chooseColor = function () {
     return s.value
 }
 
-class AlertAudio {
-    constructor() {
-        this.audio = q('.id-audio-alert')
-        this.audio.volume = 0.5
-    }
-
-    play () {
-        this.audio.play()
-    }
-
-    stop() {
-        this.audio.pause()
-        this.audio.currentTime = 0
-    }
-}
+//class AlertAudio {
+//    constructor() {
+//        this.audio = q('.id-audio-alert')
+//        this.audio.volume = 0.5
+//    }
+//
+//    play () {
+//        this.audio.play()
+//    }
+//
+//    stop() {
+//        this.audio.pause()
+//        this.audio.currentTime = 0
+//    }
+//}
 
 class Client {
     constructor() {
@@ -112,7 +112,7 @@ class Client {
         this.playersNums = {}
         this.cards = []
         this.checkColor = '红'
-        this.alertAudio = new AlertAudio()
+//        this.alertAudio = new AlertAudio()
 
         this.socket.on('broadcast', (msg) => this.broadcastCallback(msg))
 
@@ -197,11 +197,11 @@ class Client {
 
     checkUnoOrWin () {
         let hasUno = Object.values(this.playersNums).some(n => n === 1)
-        if (hasUno) {
-            this.alertAudio.play()
-        } else {
-            this.alertAudio.stop()
-        }
+//        if (hasUno) {
+//            this.alertAudio.play()
+//        } else {
+//            this.alertAudio.stop()
+//        }
         let hasWin = Object.values(this.playersNums).some(n => n === 0)
         if (hasWin) {
             let winAudio = q('.id-audio-win')

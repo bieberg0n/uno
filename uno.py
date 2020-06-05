@@ -4,6 +4,7 @@
 
 import random
 from utils import log
+from config import debug, debug_card
 
 
 def generate_cards():
@@ -44,7 +45,11 @@ class Table:
         if self.players.get(name):
             return
 
-        p = Player(name, self.deliver_cards(5), self)
+        if debug:
+            cards = debug_card[:]
+        else:
+            cards = self.deliver_cards(5)
+        p = Player(name, cards, self)
         self.players[name] = p
 
     def next_can_do(self):
@@ -60,8 +65,6 @@ class Table:
         return list(self.players.keys())[self.can_do]
 
     def win(self):
-        # for p in self.players.values():
-        #     p.cards = self.deliver_cards(5)
         self.players = {}
         self.can_do = 0
         self.last_card = ''
@@ -79,7 +82,8 @@ class Player:
             return False
 
         if self.table.add_num > 0:
-            self.cards.extend(self.table.deliver_cards(self.table.add_num))
+            cards = self.table.deliver_cards(self.table.add_num)
+            self.cards.extend(cards)
             self.table.add_num = 0
         else:
             self.cards.append(self.table.deliver_card())
@@ -88,20 +92,21 @@ class Player:
 
     def lead_check(self, card):
         last_card = self.table.last_card
+
         # 到我出牌了吗
         if self.table.can_do_player_name() != self.name:
             return False
+
+        # # 最后一张不能是功能牌
+        # elif len(self.cards) == 1 and card[1] not in str_numbers:
+        #     return False
 
         # 开始+时不能出普通牌
         elif self.table.add_num > 0 and card[1] not in ('+', '反'):
             return False
 
         # 跟上一张牌相近吗
-        elif last_card != '' and card[0] != '黑' and card[0] != last_card[0] and card[1:] != last_card[1:]:
-            return False
-
-        # 最后一张不能是功能牌
-        elif len(self.cards) == 1 and card[1] not in (str(i) for i in range(10)):
+        elif last_card != '' and card[0] != '黑' and card[0] != last_card[0] and card[1] != last_card[1]:
             return False
 
         else:
@@ -112,27 +117,30 @@ class Player:
             return False
 
         if card[0] == '黑':
-            log(self.cards)
             self.cards.remove(card[:3])
+            self.table.last_card = card[3] + card[1:2]
+
         else:
             self.cards.remove(card)
-
-        # 赢
-        if len(self.cards) <= 0:
-            self.table.win()
-            return True
-
-        # 变色
-        if card[0] == '黑':
-            self.table.last_card = card[3] + card[1:2]
-        else:
-            self.table.last_card = card
+            if card[1] == '反' and self.table.last_card[1] == '+':
+                ...
+            else:
+                self.table.last_card = card
 
         # +
         if card[1] == '+':
             self.table.add_num += int(card[2])
         elif card[1] == '反':
             self.table.next_num *= -1
+
+        # 赢?
+        if len(self.cards) <= 0:
+            str_numbers = (str(i) for i in range(10))
+            if card[1] in str_numbers:
+                self.table.win()
+            else:
+                card = self.table.deliver_card()
+                self.cards.append(card)
 
         self.table.next_can_do()
         return True
