@@ -15,6 +15,7 @@ def generate_cards():
     super_cards = ['黑转色', '黑+4']
     # generate a complete cards
     cards = [n + m for n in colors for m in symbols] * 2 + [c + m for c in colors for m in spec_cards] * 4 + super_cards * 8
+    random.shuffle(cards)
     return cards
 
 
@@ -34,8 +35,8 @@ class Table:
         if len(self.cards) == 0:
             self.cards = generate_cards()
 
-        num = random.randint(0, len(self.cards) - 1)
-        card_selected = self.cards.pop(num)
+        # num = random.randint(0, len(self.cards) - 1)
+        card_selected = self.cards.pop()
         return card_selected
 
     def deliver_cards(self, n):
@@ -122,10 +123,11 @@ class Player:
 
         else:
             self.cards.remove(card)
-            if card[1] == '反' and self.table.last_card[1] == '+':
-                ...
-            else:
-                self.table.last_card = card
+            self.table.last_card = card
+        #     if card[1] == '反' and self.table.last_card[1] == '+':
+        #         ...
+        #     else:
+        #         self.table.last_card = card
 
         # +
         if card[1] == '+':

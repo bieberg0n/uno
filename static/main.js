@@ -54,7 +54,7 @@ const showCard = function (name, card) {
     }
 }
 
-const showMsg = function (name, opName, card = '', other = '') {
+const showMsg = function (name, opName='', card = '', other = '') {
     if (other !== '') {
         other = ' | ' + other
     }
@@ -121,6 +121,13 @@ class Client {
             this.showCards()
         })
 
+        this.bindEvent()
+
+        let audio = q('audio')
+        audio.volume = 0.1
+    }
+
+    bindEvent () {
         bindClick('#id-button-name', () => {
             this.name = q('#id-input-name').value
             localStorage.setItem('name', this.name)
@@ -132,6 +139,13 @@ class Client {
 
         bindClick('#id-button-draw', () => this.socket.emit('draw', {'name': this.name}))
 
+        q('#id-input-say').addEventListener('keydown', (e) => {
+            if (e.code === 'Enter') {
+                this.say()
+            }
+        })
+        bindClick('#id-button-say', this.say)
+
         let colorCheckers = qs('.color-checker')
         for (let c of colorCheckers) {
             c.addEventListener('click', (e) => {
@@ -139,6 +153,13 @@ class Client {
                 this.showCards()
             })
         }
+    }
+
+    say = () => {
+        let input = q('#id-input-say')
+        let txt = input.value
+        this.socket.emit('say', {'name': this.name, 'say': txt,})
+        input.value = ''
     }
 
     playerHTML (player) {
@@ -242,6 +263,9 @@ class Client {
             // showNextPlayer(name)
             this.next = name
             showMsg(`轮到 ${name} 出牌`, '')
+
+        } else if (type === 'say') {
+            showMsg(name, `: ${msg['say']}`)
 
         } else {
             showMsg(name, msg['type'])

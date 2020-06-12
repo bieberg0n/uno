@@ -7,7 +7,7 @@ from utils import log
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins='*')
 table = Table()
 
 
@@ -68,6 +68,18 @@ def client_msg(msg):
     }, broadcast=True)
 
 
+@socketio.on('say')
+def client_msg(msg):
+    name = msg['name']
+    log(name, 'say')
+
+    emit('broadcast', {
+        'type': 'say',
+        'name': name,
+        'say': msg['say'],
+    }, broadcast=True)
+
+
 @socketio.on('connect_event')
 def connect(msg):
     name = msg['name']
@@ -81,8 +93,13 @@ def connect(msg):
     }, broadcast=True)
 
     emit('push_cards', {'data': table.players[name].cards})
+    emit('broadcast', {
+        # 'name': '轮到 {} 出牌'.format(table.can_do_player_name()),
+        'name': table.can_do_player_name(),
+        'type': 'next'
+    }, broadcast=True)
 
 
 if __name__ == '__main__':
     # log('listen on 0.0.0.0:', port, '...')
-    socketio.run(app, host='0.0.0.0', port=port, debug=True)
+    socketio.run(app, host='0.0.0.0', port=port, debug=False)
